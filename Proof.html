@@ -1,0 +1,428 @@
+<style>
+
+body
+{
+	font-family:"Arial"
+}
+</style>
+
+<script>
+/****COPY BELOW CODE*****************/
+
+class OvdRule {
+
+
+  constructor(field, lastname) {
+    this.field = field;
+	this.lastname=lastname.toUpperCase();
+	
+	var year = new Date().getFullYear().toString();
+	
+	var third = year.charAt(2);
+	var fourth = year.charAt(3);
+	
+	var range ="";
+	var delimeter = "";
+	for(var i =0;i<third;i++)
+	{
+		range+=delimeter+i;
+		delimeter="|"
+	}
+	
+	this.dlrx = '[AN,AP,AR,AS,BR,CH,DN,DD,DL,GJ,HR,HP,JK,KA,KL,LD,MP,MH,MN,ML,MZ,NL,OR,PY,PN,RJ,SK,TN,TR,UP,WB]{2}[\- ]{1}[0-9]{2}'
+	
+	this.dlrx+='(([19]{2}[0-9]{2})|[20]{2}((['+range+']{1}[0-9]{1})|(['+third+']{1}[0-'+fourth+']{1})))'
+	
+	this.dlrx+='[0-9]{7}'
+	
+	
+	this.panLNrx = '[A-Z]{3}[P]{1}'+this.lastname.charAt(0)+'[0-9]{4}[A-Z]{1}'
+	this.panrx = '[A-Z]{3}[P]{1}[A-Z]{1}[0-9]{4}[A-Z]{1}';
+	
+	this.pprx = '[A-PR-WYa-pr-wy][1-9]\\d\\s?\\d{4}[1-9]'
+	
+	this.vidrx = '[A-Z]{3}[0-9]{7}'
+	
+	this.mgnregarx = '[A-Z]{2}[0-9]{11,16}'
+	
+	this.nprrx = '(\\b(?:([A-Za-z0-9])(?!\\2{2}))+\\b)'
+	
+	this.length = this.field.length;
+  }
+  
+  get pan(){
+	
+	return this.run(this.panrx);
+  }
+  
+  get panLN()
+  {
+	
+	return this.run(this.panLNrx);
+  }
+  
+  get dl()
+  {
+	return this.run(this.dlrx);
+  }
+  
+  get passport()
+  {
+	return this.run(this.pprx);
+  }
+  
+  get voterid()
+  {
+	return this.run(this.vidrx);
+  }
+  
+  get mgnrega()
+  {
+	return this.run(this.mgnregarx);
+  }
+  
+  get npr()
+  {
+  
+    if(this.length<5 || this.length> 20)
+	{
+		return false;
+	}
+	return this.run(this.nprrx);
+	
+	
+  }
+  
+  run(regex)
+  {
+
+	var patt = new RegExp('^'+regex+'$');
+
+	return patt.test(this.field);
+  }
+}
+
+/****COPY ABOVE CODE*****************/
+function validate()
+{
+
+	var proof = document.getElementById('proof').value;
+	
+	if(proof==-1){
+	message = '<h2 style="color:Tomato;">Select Something!!!</h2>';
+	}
+	showinfo(proof);
+	var val = document.getElementById('data').value;
+	var message = '';
+	if(val.length==0)
+	{
+		message = '<p style="color:Orange;">Fill up the data !!!</p>'
+		document.getElementById("message").innerHTML = message;
+		return;
+	}
+	
+	
+	
+	
+	message = '<p style="color:DodgerBlue;">Working!!!</p>'
+	document.getElementById("message").innerHTML = message;
+	
+	/****HOW TO USE -- BELOW CODE*****************/
+	var result = false;
+	
+	var ovdRule = new OvdRule(val,document.getElementById('lastname').value);
+	
+	switch (proof) {
+  case 'pan':
+    result = ovdRule.pan; 
+    break;
+	
+  case 'panLN':
+    result = ovdRule.panLN; 
+    break;
+  case 'passport':
+    result = ovdRule.passport;
+    break;
+  case 'dl':
+     result = ovdRule.dl;
+    break;
+  case 'npr':
+    result = ovdRule.npr;
+    break;
+  case 'mgnrega':
+    result = ovdRule.mgnrega;
+    break;
+  case 'voterid':
+    result = ovdRule.voterid;
+    break;
+
+}
+
+/****HOW TO USE -- ABOVE CODE...*****************/
+	if(result && proof!='-1')
+	{
+		 message = '<h2 style="color:#3cb371">TRUE</h2>';
+	}
+	else if(proof!='-1')
+	{
+	
+	message = '<h2 style="color:#ff0000">FALSE</h2>';
+
+
+	}
+	
+	document.getElementById("message").innerHTML = message;
+	console.log(proof);	
+}
+
+
+function showinfo(proof)
+{
+	if(proof==-1)
+	{
+		return;
+	}
+	
+	var drawTable = "<table border=1 cellpadding=3 cellspacing=3>";
+	drawTable+="<tr>"+document.getElementById("header").innerHTML+"</tr>";
+	drawTable+="<tr>"+document.getElementById(proof).innerHTML+"</tr>";
+	drawTable+="</table>"
+	
+	document.getElementById("information").innerHTML=drawTable;
+}
+
+</script>
+
+
+<html>
+
+<body>
+<select id="proof" onchange="validate()">
+
+<option value="-1">CHOOSE OPTION</option>
+<option value="pan">PAN</option>
+<option value="panLN">PAN With Last Name</option>
+<option value="passport">PASSPORT</option>
+<option value="dl">DRIVING LICENCE</option>
+<option value="voterid">VOTERID</option>
+<option value="mgnrega">MGNREGA JOB CARD</option>
+<option value="npr">NPR Letter</option> 
+</select>
+<input type="text" id="data" onkeyup="validate();" onpaste="validate();" oninput="validate();" placeholder="Data">
+                <input type="text" id="lastname" placeholder="Last Name" value="Bhushan">
+             
+<br>
+
+
+<button onclick="validate()">Go</button>
+
+<br/>
+<div id="message" style="margin-top:20px;margin-bottom:20px"></div>
+
+<br/>
+
+<div id="information">
+
+</div>
+
+<div style="display:none">
+<table border=1 cellpadding=1 cellspacing=1 id="info">
+
+<tr id="header">
+<th>
+Use Case
+</th>
+<th>
+Correct Data
+</th>
+<th>
+Incorrect Data
+</th>
+<th>
+Rule
+</th>
+
+
+</tr>
+
+<tr id="pan">
+<td>
+PAN
+</td>
+<td>
+<p>AKGPU1245B</p>
+<p>NKGPU1245B</p>
+</td>
+<td>
+<p>AKGXU1245BX</p>
+<p>AKGXU1245B</p>
+</td>
+<td>
+<p>a.	It should be ten characters long.</p>
+<p>b.	The first 5 characters should be any upper case alphabets.</p>
+<p>i.	4th character should be P.</p>
+<p>ii.	5th character should be the first character of last name entered by user.</p>
+<p>c.	The next four-characters should be any number from 0 to 9.</p>
+<p>d.	The last (tenth) character should be any upper case alphabet.</p>
+<p>e.	It should not contain any white spaces.</p>
+
+</td>
+
+
+</tr>
+<tr id="panLN">
+<td>
+PAN with Last Name
+</td>
+<td>
+If Last name is Bhushan
+<p>AKGPB1245B</p>
+<p>NKGPB1245B</p>
+</td>
+<td>
+<p>AKGXU1245BX</p>
+<p>AKGXU1245B</p>
+</td>
+<td>
+<p>a.	It should be ten characters long.</p>
+<p>b.	The first 5 characters should be any upper case alphabets.</p>
+<p>i.	4th character should be P.</p>
+<p><b>ii.	5th character should be the first character of last name entered by user.</b></p>
+<p>c.	The next four-characters should be any number from 0 to 9.</p>
+<p>d.	The last (tenth) character should be any upper case alphabet.</p>
+<p>e.	It should not contain any white spaces.</p>
+
+</td>
+
+
+</tr>
+
+<tr id="dl">
+<td>
+DRIVING LICENCE
+</td>
+<td>
+<p>HR-0619850034761</p>
+<p>HR 0619850034761</p>
+</td>
+<td>
+<p>HX-0619850034761</p>
+<p>0619850034761</p>
+</td>
+<td>
+<p>a.	It should be 16 characters long (including space or hyphen (-)).</p>
+<p>b.	The driving license number can be entered in any of the following formats:</p>
+<p>i.	HR-0619850034761 OR</p>
+<p>ii.	HR 0619850034761</p>
+<p>c.	The first two characters should be upper case alphabets that represent the state code.</p>
+<p>d.	The next two characters should be digits that represent the RTO code.</p>
+<p>e.	The next four characters should be digits that represent the license issued year.</p>
+<p>f.	The next seven characters should be any digits from 0-9.</p>
+
+</td>
+
+
+</tr>
+
+<tr id="passport">
+<td>
+PASSPORT
+</td>
+<td>
+<p>A2096457</p>
+</td>
+<td>
+<p>A209645704</p>
+<p>209645704</p>
+</td>
+<td>
+<p>a.	It should be eight characters long.</p>
+<p>b.	The first character should be an upper case alphabet.</p>
+<p>c.	The next two characters should be a number, but the first character<br/> should be any number from 1-9 and the second character should be any number from 0-9.</p>
+<p>d.	It should be zero or one white space character.</p>
+<p>e.	The next four characters should be any number from 0-9.</p>
+<p>f.	The last character should be any number from 1-9.</p>
+
+</td>
+
+
+</tr>
+
+<tr id="voterid">
+<td>
+VOTERID
+</td>
+<td>
+<p>ABC1234567</p>
+</td>
+<td>
+<p>BC12345678</p>
+<p>ABC12345678</p>
+</td>
+<td>
+<p>a.	It should be ten characters long.                </p>
+<p>b.	First 3 character should be upper case alphabets.</p>
+<p>c.	Next 7 should be numbers from 0-9.               </p>
+<p>d.	It should not contain any white spaces.          </p>
+														 
+
+</td>
+
+
+</tr>
+
+<tr id="mgnrega">
+<td >
+MGNREGA JOB CARD
+</td>
+<td >
+<p>AB1234567890123456</p>
+<p>AB12345678901</p>
+</td>
+<td>
+<p>AB123456789</p>
+<p>ABC123445566</p>
+
+</td>
+<td>
+<p>a.	It should be minimum 13 character long. And maximum 18 characters long.</p>
+<p>b.	First 2 character should be upper case alphabets. </p>
+<p>c.	Rest should be numbers (0-9).                     </p>
+<p>d.	No special characters.                            </p>
+<p>e.	It should not contain any white spaces.           </p>
+
+</td>
+
+
+</tr>
+
+<tr id="npr" >
+<td>
+NPR Letter 
+</td>
+<td>
+<p>ABCDEF</p>
+<p>ABCDEF12131</p>
+</td>
+<td>
+ABCD</p>
+1234ABBBBB</p>
+</td>
+<td>
+<p>a.	Alpha Numeric character to be allowed.</p>
+<p>b.	Min 5 characters, Max 20.</p>
+<p>c.	No special characters.</p>
+<p>d.	It should not contain any white spaces.</p>
+<p>e.	Same Character should not be get repeated thrice in a sequence. For e.g. AAA, 222.</p>
+
+
+</td>
+
+
+</tr>
+
+</table>
+</div>
+</body>
+
+</html>
